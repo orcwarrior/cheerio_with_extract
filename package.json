@@ -6,6 +6,27 @@
   "maintainers": [
     "Felix Boehm <me@feedic.com>"
   ],
+  "scripts": {
+    "test": "npm run lint && npm run test:jest",
+    "test:jest": "jest",
+    "test:jest:cov": "npm run test:jest -- --coverage",
+    "lint": "npm run lint:es && npm run lint:prettier",
+    "lint:es": "eslint --ignore-path .gitignore .",
+    "lint:prettier": "npm run format:prettier:raw -- --check",
+    "format": "npm run format:es && npm run format:prettier",
+    "format:es": "npm run lint:es -- --fix",
+    "format:prettier": "npm run format:prettier:raw -- --write",
+    "format:prettier:raw": "prettier \"**/*.{{m,c,}{j,t}s{x,},md{x,},json,y{a,}ml}\" --ignore-path .gitignore",
+    "benchmark": "npm run build:cjs && ts-node benchmark/benchmark.ts --regex \"^(?!.*highmem)\"",
+    "update-sponsors": "tsx scripts/fetch-sponsors.mts",
+    "bench": "npm run benchmark",
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "tsc --project tsconfig.cjs.json --sourceRoot ./src && node ./scripts/post-build.js",
+    "build:esm": "tsc --project tsconfig.esnext.json && node ./scripts/post-build.js",
+    "prepublishOnly": "npm run build",
+    "prepare": "husky install",
+    "postinstall": "npm build"
+  },
   "funding": "https://github.com/cheeriojs/cheerio?sponsor=1",
   "license": "MIT",
   "keywords": [
@@ -26,13 +47,13 @@
     "url": "https://github.com/cheeriojs/cheerio/issues"
   },
   "homepage": "https://cheerio.js.org/",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "lib/cjs/index.js",
+  "types": "lib/cjs/index.d.ts",
   "module": "lib/esm/index.js",
   "type": "commonjs",
   "exports": {
     ".": {
-      "require": "./lib/index.js",
+      "require": "./lib/cjs/index.js",
       "import": {
         "node": "./lib/esm/batteries.js",
         "default": "./lib/esm/index.js"
@@ -98,28 +119,6 @@
     "ts-jest": "^29.2.2",
     "tsx": "^4.16.2",
     "typescript": "^5.5.3"
-  },
-  "scripts": {
-    "test": "npm run lint && npm run test:jest",
-    "test:jest": "jest",
-    "test:jest:cov": "npm run test:jest -- --coverage",
-    "lint": "npm run lint:es && npm run lint:prettier",
-    "lint:es": "eslint --ignore-path .gitignore .",
-    "lint:prettier": "npm run format:prettier:raw -- --check",
-    "format": "npm run format:es && npm run format:prettier",
-    "format:es": "npm run lint:es -- --fix",
-    "format:prettier": "npm run format:prettier:raw -- --write",
-    "format:prettier:raw": "prettier \"**/*.{{m,c,}{j,t}s{x,},md{x,},json,y{a,}ml}\" --ignore-path .gitignore",
-    "benchmark": "npm run build:cjs && ts-node benchmark/benchmark.ts --regex \"^(?!.*highmem)\"",
-    "update-sponsors": "tsx scripts/fetch-sponsors.mts",
-    "bench": "npm run benchmark",
-    "build": "npm run build:cjs && npm run build:esm",
-    "make-esm": "sed 's/\"type\": \"commonjs\"/\"type\": \"module\"/g' package.json > tmp.json && mv tmp.json package.json",
-    "make-cjs": "sed 's/\"type\": \"module\"/\"type\": \"commonjs\"/g' package.json > tmp.json && mv tmp.json package.json",
-    "build:cjs": "tsc --sourceRoot https://raw.githubusercontent.com/cheeriojs/cheerio/$(git rev-parse HEAD)/src/",
-    "build:esm": "npm run make-esm && npm run build:cjs -- --target es2019 --outDir lib/esm && echo '{\"type\":\"module\"}' > lib/esm/package.json; npm run make-cjs",
-    "prepublishOnly": "npm run build",
-    "prepare": "husky install"
   },
   "prettier": {
     "singleQuote": true,
